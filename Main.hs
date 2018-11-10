@@ -20,6 +20,7 @@ tileSize = 15
 maxTileHoriz = 27
 window = InWindow "Platform" (width, height) (offset, offset)
 background = black
+pacmanInitialPos = (0, 0)
 
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
 data GameState = Playing | Won | Lost deriving (Eq, Show) 
@@ -29,7 +30,6 @@ data PlatformGame = Game
     level :: [String],           -- Updated level layout
     initialLevel :: [String],    -- Initial level layout
     pacmanPos :: (Int, Int),     -- Tile coord of pacman
-    pacmanDir :: Direction,      -- Pacman's direction of travel
     seconds :: Float,            -- Game timer
     gen :: StdGen,               -- Random number generator
     paused :: Bool,              -- Paused or not
@@ -57,18 +57,18 @@ setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 -- Rendering
 render :: PlatformGame -> Picture 
 render g = pictures [renderLevel g, 
-                     renderPlayer "pacman" (pacmanPos g) (pacmanDir g) Normal g]
+                     renderPlayer "player" (pacmanPos g) g]
 
-renderPlayer :: String -> (Int, Int) -> Direction -> PlayerState -> PlatformGame -> Picture 
-renderPlayer player (x, y) dir state game = translate x' y' $ GG.png file
+renderPlayer :: String -> (Int, Int) -> PlatformGame -> Picture 
+renderPlayer player (x, y) game = translate x' y' $ GG.png file
   where 
     (x', y') = tileToCoord (x, y)
-    file = getFile player dir state game
+    file = getFile player game
 
 -- TODO: should preload images
-getFile :: String -> Direction -> PlayerState -> PlatformGame -> String
-getFile player dir state game
- | otherwise = "img/" ++ player ++ show dir ++ step ++ ".png"
+getFile :: String -> PlatformGame -> String
+getFile player game
+ | otherwise = "img/" ++ player ++ step ++ ".png"
   where 
     step = onTick game True 2 "1" "2"
 
@@ -95,10 +95,10 @@ renderTile c x y
 
 -- Event handling
 handleKeys :: Event -> PlatformGame -> PlatformGame
-handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = setPacmanDir East g
-handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = setPacmanDir West g
-handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setPacmanDir North g
-handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = setPacmanDir South g
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = g
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = g
+handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = g
+handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys _ game
  | (gameState game) /= Playing = resetGameFully game
@@ -112,16 +112,16 @@ update secs game
 
 
 resetGame :: PlatformGame -> PlatformGame
-resetGame g = g { pacmanPos = pacmanInitialPos, pacmanDir = pacmanInitialDir, ghostPos = [redGhostInitialPos, blueGhostInitialPos, yellowGhostInitialPos, pinkGhostInitialPos], ghostDir = replicate 4 ghostInitialDir, ghostState = replicate 4 CenterZone, seconds = 0, pacmanNextDir = None, scaredTimer = 0, countdownTimer = 3}
+resetGame g = g { pacmanPos = pacmanInitialPos, seconds = 0}
 
 resetGameFully :: PlatformGame -> PlatformGame
-resetGameFully g = resetGame $ g {gameState = Playing, lives = pacmanInitialLives, score = 0, level = (initialLevel g), coinCount = countCoins (initialLevel g)}
+resetGameFully g = resetGame $ g {gameState = Playing, level = (initialLevel g)}
 
 initTiles = do 
   contents <- readFile "1.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, pacmanPos = pacmanInitialPos, pacmanDir = pacmanInitialDir, ghostPos = [redGhostInitialPos, blueGhostInitialPos, yellowGhostInitialPos, pinkGhostInitialPos], ghostDir = replicate 4 ghostInitialDir, ghostState = replicate 4 CenterZone, score = 0, seconds = 0, lives = pacmanInitialLives, pacmanNextDir = None, gen = stdGen, scaredTimer = 0, paused = False, countdownTimer = 3, gameState = Playing, coinCount = countCoins rows, ghostEatenCount = 0 }
+  let initialState = Game { level = rows, initialLevel = rows, pacmanPos = pacmanInitialPos, seconds = 0, gen = stdGen, paused = False, gameState = Playing}
   print rows
   return initialState
 
