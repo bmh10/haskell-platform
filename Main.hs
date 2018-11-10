@@ -20,7 +20,7 @@ tileSize = 15
 maxTileHoriz = 27
 window = InWindow "Platform" (width, height) (offset, offset)
 background = black
-pacmanInitialPos = (0, 0)
+playerInitialPos = (10, 0)
 
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
 data GameState = Playing | Won | Lost deriving (Eq, Show) 
@@ -29,7 +29,7 @@ data PlatformGame = Game
   { 
     level :: [String],           -- Updated level layout
     initialLevel :: [String],    -- Initial level layout
-    pacmanPos :: (Int, Int),     -- Tile coord of pacman
+    playerPos :: (Int, Int),     -- Tile coord of player
     seconds :: Float,            -- Game timer
     gen :: StdGen,               -- Random number generator
     paused :: Bool,              -- Paused or not
@@ -57,10 +57,10 @@ setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 -- Rendering
 render :: PlatformGame -> Picture 
 render g = pictures [renderLevel g, 
-                     renderPlayer "player" (pacmanPos g) g]
+                     renderPlayer "player" (playerPos g) g]
 
 renderPlayer :: String -> (Int, Int) -> PlatformGame -> Picture 
-renderPlayer player (x, y) game = translate x' y' $ GG.png file
+renderPlayer player (x, y) game = translate x' y' $ color red $ circleSolid 7 
   where 
     (x', y') = tileToCoord (x, y)
     file = getFile player game
@@ -108,11 +108,16 @@ update :: Float -> PlatformGame -> PlatformGame
 update secs game
  | (paused game)               = game
  | (gameState game) /= Playing = game
- | otherwise                   = game
+ | otherwise                   = updatePlayerPos game
+
+updatePlayerPos g = 
+  g { playerPos = posAdd (playerPos g) (0,1) }
+
+posAdd (x,y) (x',y') = (x+x',y+y')
 
 
 resetGame :: PlatformGame -> PlatformGame
-resetGame g = g { pacmanPos = pacmanInitialPos, seconds = 0}
+resetGame g = g { playerPos = playerInitialPos, seconds = 0}
 
 resetGameFully :: PlatformGame -> PlatformGame
 resetGameFully g = resetGame $ g {gameState = Playing, level = (initialLevel g)}
@@ -121,7 +126,7 @@ initTiles = do
   contents <- readFile "1.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, pacmanPos = pacmanInitialPos, seconds = 0, gen = stdGen, paused = False, gameState = Playing}
+  let initialState = Game { level = rows, initialLevel = rows, playerPos = playerInitialPos, seconds = 0, gen = stdGen, paused = False, gameState = Playing}
   print rows
   return initialState
 
