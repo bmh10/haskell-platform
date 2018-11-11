@@ -95,8 +95,8 @@ renderTile c x y
 
 -- Event handling
 handleKeys :: Event -> PlatformGame -> PlatformGame
-handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = g
-handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = g
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = updatePlayerPos g (1,0)
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = updatePlayerPos g (-1,0)
 handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = g
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
@@ -108,15 +108,16 @@ update :: Float -> PlatformGame -> PlatformGame
 update secs game
  | (paused game)               = game
  | (gameState game) /= Playing = game
- | otherwise                   = updatePlayerPos game
+ | otherwise                   = updatePlayer game
 
-updatePlayerPos g
- | canMove g (0,1) = g { playerPos = posAdd (playerPos g) (0,1) }
+updatePlayer g
+ | canMove g (0,1) = updatePlayerPos g (0,1)
  | otherwise = g
 
 canMove g (x,y) = getTile x' y' g == '.'
-  where (x',y') = posAdd (playerPos g) (0,1)
+  where (x',y') = posAdd (playerPos g) (x,y)
 
+updatePlayerPos g (x,y) = g {playerPos = posAdd (playerPos g) (x,y)}
 posAdd (x,y) (x',y') = (x+x',y+y')
 
 
