@@ -87,7 +87,7 @@ renderTile :: Char -> Int -> Int -> Picture
 renderTile c x y
  | c == 'x'  = translate x' y' $ color blue $ rectangleSolid (tileSize-1) (tileSize-1)
  | c == '+'  = translate x' y' $ color white $ rectangleSolid (tileSize-1) 2
- | c == '.'  = translate x' y' $ color yellow $ circleSolid 2
+ | c == '.'  = translate x' y' $ blank
  | c == 'o'  = translate x' y' $ color yellow $ circleSolid 4
  | otherwise = blank
   where
@@ -110,8 +110,12 @@ update secs game
  | (gameState game) /= Playing = game
  | otherwise                   = updatePlayerPos game
 
-updatePlayerPos g = 
-  g { playerPos = posAdd (playerPos g) (0,1) }
+updatePlayerPos g
+ | canMove g (0,1) = g { playerPos = posAdd (playerPos g) (0,1) }
+ | otherwise = g
+
+canMove g (x,y) = getTile x' y' g == '.'
+  where (x',y') = posAdd (playerPos g) (0,1)
 
 posAdd (x,y) (x',y') = (x+x',y+y')
 
