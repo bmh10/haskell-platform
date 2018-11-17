@@ -97,7 +97,8 @@ renderTile c x y
 
 -- Event handling
 handleKeys :: Event -> PlatformGame -> PlatformGame
-handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = updatePlayerPos g
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = g { playerVel = (1,vy) } where (vx,vy) = playerVel g
+handleKeys (EventKey (SpecialKey KeyRight) Up _ _) g  = g { playerVel = (0,vy) } where (vx,vy) = playerVel g
 handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = updatePlayerPos g
 handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = g
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
@@ -119,7 +120,7 @@ canMove g = getTile x' y' g == '.'
 
 updatePlayerPos g
  | canMove g = g {playerPos = posAdd (playerPos g) (playerVel g)}
- | otherwise = g
+ | otherwise = g { playerVel = (0,0) }
 
 posAdd (x,y) (x',y') = (x+x',y+y')
 
