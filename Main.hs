@@ -21,6 +21,7 @@ maxTileHoriz = 27
 window = InWindow "Platform" (width, height) (offset, offset)
 background = black
 playerInitialPos = (10, 0)
+playerInitialVel = (0, 1)
 
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
 data GameState = Playing | Won | Lost deriving (Eq, Show) 
@@ -30,6 +31,7 @@ data PlatformGame = Game
     level :: [String],           -- Updated level layout
     initialLevel :: [String],    -- Initial level layout
     playerPos :: (Int, Int),     -- Tile coord of player
+    playerVel :: (Int, Int),     -- Player velocity
     seconds :: Float,            -- Game timer
     gen :: StdGen,               -- Random number generator
     paused :: Bool,              -- Paused or not
@@ -95,8 +97,8 @@ renderTile c x y
 
 -- Event handling
 handleKeys :: Event -> PlatformGame -> PlatformGame
-handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = updatePlayerPos g (1,0)
-handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = updatePlayerPos g (-1,0)
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = updatePlayerPos g
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = updatePlayerPos g
 handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = g
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
@@ -110,16 +112,16 @@ update secs game
  | (gameState game) /= Playing = game
  | otherwise                   = updatePlayer game
 
-updatePlayer g
- | canMove g (0,1) = updatePlayerPos g (0,1)
+updatePlayer g = updatePlayerPos g
+
+canMove g = getTile x' y' g == '.'
+  where (x',y') = posAdd (playerPos g) (playerVel g)
+
+updatePlayerPos g
+ | canMove g = g {playerPos = posAdd (playerPos g) (playerVel g)}
  | otherwise = g
 
-canMove g (x,y) = getTile x' y' g == '.'
-  where (x',y') = posAdd (playerPos g) (x,y)
-
-updatePlayerPos g (x,y) = g {playerPos = posAdd (playerPos g) (x,y)}
 posAdd (x,y) (x',y') = (x+x',y+y')
-
 
 resetGame :: PlatformGame -> PlatformGame
 resetGame g = g { playerPos = playerInitialPos, seconds = 0}
@@ -131,7 +133,7 @@ initTiles = do
   contents <- readFile "1.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, playerPos = playerInitialPos, seconds = 0, gen = stdGen, paused = False, gameState = Playing}
+  let initialState = Game { level = rows, initialLevel = rows, playerPos = playerInitialPos, playerVel = playerInitialVel, seconds = 0, gen = stdGen, paused = False, gameState = Playing}
   print rows
   return initialState
 
