@@ -97,13 +97,13 @@ renderTile c x y
 
 -- Event handling
 handleKeys :: Event -> PlatformGame -> PlatformGame
-handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g  = g { playerVel = (1,vy) } where (vx,vy) = playerVel g
-handleKeys (EventKey (SpecialKey KeyRight) Up _ _) g  = g { playerVel = (0,vy) } where (vx,vy) = playerVel g
-handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g   = 
-  g { playerVel = (-1,vy) } where (vx,vy) = playerVel g
-handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) g   = 
-  g { playerVel = (0,vy) } where (vx,vy) = playerVel g
-handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = g
+handleKeys (EventKey (SpecialKey KeyRight) Down _ _) g = setXVel g 1
+handleKeys (EventKey (SpecialKey KeyRight) Up _ _) g  = setXVel g 0
+
+handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g = setXVel g (-1)
+handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) g = setXVel g 0
+
+handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setYVel g (-3)
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys _ game
