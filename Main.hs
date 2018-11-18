@@ -116,14 +116,22 @@ update secs game
  | (gameState game) /= Playing = game
  | otherwise                   = updatePlayer game
 
-updatePlayer g = updatePlayerPos g
+canMove g vel = getTile x' y' g == '.'
+  where (x',y') = posAdd (playerPos g) vel
 
-canMove g = getTile x' y' g == '.'
-  where (x',y') = posAdd (playerPos g) (playerVel g)
+applyGravity g = if canMove g (0,1) then setYVel g 1 else g
 
-updatePlayerPos g
- | canMove g = g {playerPos = posAdd (playerPos g) (playerVel g)}
- | otherwise = g { playerVel = (0,0) }
+updatePlayer g = movePlayer $ applyGravity g
+
+movePlayer g
+  | canMove g (playerVel g) = g {playerPos = posAdd (playerPos g) (playerVel g)}
+  | otherwise = g { playerVel = (0,0) }
+
+setXVel g vx' = g { playerVel = (vx', vy)} 
+  where (vx,vy) = playerVel g
+
+setYVel g vy' = g { playerVel = (vx, vy')} 
+  where (vx,vy) = playerVel g
 
 posAdd (x,y) (x',y') = (x+x',y+y')
 
