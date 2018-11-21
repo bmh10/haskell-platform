@@ -11,7 +11,7 @@ import Data.Fixed
 import Data.List
 import Data.Maybe
 
-fps = 5
+fps = 10
 width = 420 -- 28 * 15
 height = 465 + dashboardHeight -- 31 * 15
 dashboardHeight = 20
