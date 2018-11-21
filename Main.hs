@@ -35,7 +35,8 @@ data PlatformGame = Game
     seconds :: Float,            -- Game timer
     gen :: StdGen,               -- Random number generator
     paused :: Bool,              -- Paused or not
-    gameState :: GameState       -- State of the game
+    gameState :: GameState,      -- State of the game
+    bounce :: Bool               -- Does ball auto-bounce 
   } deriving Show 
 
 -- Tile functions
@@ -106,6 +107,7 @@ handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) g = setXVel g 0
 handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setYVel g (-5)
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
+handleKeys (EventKey (Char 'b') Down _ _) g = g {bounce = not (bounce g)}
 handleKeys _ game
  | (gameState game) /= Playing = resetGameFully game
  | otherwise = game
@@ -119,7 +121,11 @@ update secs game
 canMove g vel = getTile x' y' g == '.'
   where (x',y') = posAdd (playerPos g) vel
 
-applyGravity g = if canMove g (0,1) then setYVel g 1 else g
+applyGravity g
+ | canMove g (0,1) = setYVel g 1
+ | (bounce g) = setYVel g (-5)
+ | otherwise = g
+  
 
 updatePlayer g = movePlayer $ applyGravity g
 
@@ -145,7 +151,7 @@ initTiles = do
   contents <- readFile "1.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, playerPos = playerInitialPos, playerVel = playerInitialVel, seconds = 0, gen = stdGen, paused = False, gameState = Playing}
+  let initialState = Game { level = rows, initialLevel = rows, playerPos = playerInitialPos, playerVel = playerInitialVel, seconds = 0, gen = stdGen, paused = False, gameState = Playing, bounce = False}
   print rows
   return initialState
 
