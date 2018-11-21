@@ -103,7 +103,7 @@ handleKeys (EventKey (SpecialKey KeyRight) Up _ _) g  = setXVel g 0
 handleKeys (EventKey (SpecialKey KeyLeft) Down _ _) g = setXVel g (-1)
 handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) g = setXVel g 0
 
-handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setYVel g (-3)
+handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setYVel g (-5)
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys _ game
@@ -125,7 +125,7 @@ updatePlayer g = movePlayer $ applyGravity g
 
 movePlayer g
   | canMove g (playerVel g) = g {playerPos = posAdd (playerPos g) (playerVel g)}
-  | otherwise = g { playerVel = (0,0) }
+  | otherwise = setYVel g 0
 
 setXVel g vx' = g { playerVel = (vx', vy)} 
   where (vx,vy) = playerVel g
