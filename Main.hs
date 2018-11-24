@@ -22,6 +22,7 @@ window = InWindow "Platform" (width, height) (offset, offset)
 background = black
 playerInitialPos = (10, 0)
 playerInitialVel = (0, 1)
+cameraInitialPos = (0, 0)
 
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
 data GameState = Playing | Won | Lost deriving (Eq, Show) 
@@ -32,6 +33,7 @@ data PlatformGame = Game
     initialLevel :: [String],    -- Initial level layout
     playerPos :: (Int, Int),     -- Tile coord of player
     playerVel :: (Int, Int),     -- Player velocity
+    cameraPos :: (Int, Int),     -- Camera position
     seconds :: Float,            -- Game timer
     gen :: StdGen,               -- Random number generator
     paused :: Bool,              -- Paused or not
@@ -59,8 +61,9 @@ setAtIdx idx val xs = take idx xs ++ [val] ++ drop (idx+1) xs
 
 -- Rendering
 render :: PlatformGame -> Picture 
-render g = pictures [renderLevel g, 
+render g = translate cx cy $ pictures [renderLevel g, 
                      renderPlayer "player" (playerPos g) g]
+  where (cx, cy) = tileToCoord $ cameraPos g
 
 renderPlayer :: String -> (Int, Int) -> PlatformGame -> Picture 
 renderPlayer player (x, y) game = translate x' y' $ color red $ circleSolid 7 
@@ -151,7 +154,7 @@ initTiles = do
   contents <- readFile "1.lvl"
   stdGen <- newStdGen
   let rows = words contents
-  let initialState = Game { level = rows, initialLevel = rows, playerPos = playerInitialPos, playerVel = playerInitialVel, seconds = 0, gen = stdGen, paused = False, gameState = Playing, bounce = False}
+  let initialState = Game { level = rows, initialLevel = rows, playerPos = playerInitialPos, playerVel = playerInitialVel, seconds = 0, gen = stdGen, paused = False, gameState = Playing, bounce = False, cameraPos = cameraInitialPos}
   print rows
   return initialState
 
