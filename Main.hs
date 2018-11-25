@@ -22,7 +22,7 @@ window = InWindow "Platform" (width, height) (offset, offset)
 background = black
 playerInitialPos = (10, 0)
 playerInitialVel = (0, 1)
-cameraInitialPos = (0, 0)
+cameraInitialPos = (15, 15)
 
 data Direction = North | East | South | West | None deriving (Enum, Eq, Show, Bounded)
 data GameState = Playing | Won | Lost deriving (Eq, Show) 
@@ -123,7 +123,7 @@ update :: Float -> PlatformGame -> PlatformGame
 update secs game
  | (paused game)               = game
  | (gameState game) /= Playing = game
- | otherwise                   = updatePlayer game
+ | otherwise                   = updateCamera $ updatePlayer game
 
 canMove g vel = getTile x' y' g == '.'
   where (x',y') = posAdd (playerPos g) vel
@@ -132,7 +132,9 @@ applyGravity g
  | canMove g (0,1) = setYVel g 1
  | (bounce g) = setYVel g (-5)
  | otherwise = g
-  
+ 
+updateCamera g = g { cameraPos = (-px+20, -py+30)}
+  where (px, py) = playerPos g
 
 updatePlayer g = movePlayer $ applyGravity g
 
