@@ -133,7 +133,7 @@ applyGravity g
  | (bounce g) = setYVel g (-5)
  | otherwise = g
  
-updateCamera g = g { cameraPos = (-px+20, -py+30)}
+updateCamera g = g { cameraPos = (-px+24, -py+40)}
   where (px, py) = playerPos g
 
 updatePlayer g = movePlayer $ applyGravity g
@@ -142,10 +142,14 @@ movePlayer g
   | canMove g (playerVel g) = g {playerPos = posAdd (playerPos g) (playerVel g)}
   | otherwise = setYVel g 0
 
-setXVel g vx' = g { playerVel = (vx', vy)} 
+setXVel g vx'
+ | canMove g (vx',vy) = g { playerVel = (vx', vy)}
+ | otherwise = g
   where (vx,vy) = playerVel g
 
-setYVel g vy' = g { playerVel = (vx, vy')} 
+setYVel g vy'
+ | canMove g (vx,vy') = g { playerVel = (vx, vy')}
+ | otherwise = g
   where (vx,vy) = playerVel g
 
 posAdd (x,y) (x',y') = (x+x',y+y')
