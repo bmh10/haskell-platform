@@ -109,10 +109,6 @@ handleKeys (EventKey (SpecialKey KeyLeft) Up _ _) g = setXVel g 0
 
 handleKeys (EventKey (SpecialKey KeyUp) Down _ _) g     = setYVel g (-5)
 handleKeys (EventKey (SpecialKey KeyDown) Down _ _) g   = g
-handleKeys (EventKey (Char 'a') Down _ _) g = g {cameraPos = posAdd (cameraPos g) (1,0)}
-handleKeys (EventKey (Char 'd') Down _ _) g = g {cameraPos = posAdd (cameraPos g) ((-1),0)}
-handleKeys (EventKey (Char 'w') Down _ _) g = g {cameraPos = posAdd (cameraPos g) (0,1)}
-handleKeys (EventKey (Char 's') Down _ _) g = g {cameraPos = posAdd (cameraPos g) (0,(-1))}
 handleKeys (EventKey (Char 'p') Down _ _) g = g {paused = not (paused g)}
 handleKeys (EventKey (Char 'b') Down _ _) g = g {bounce = not (bounce g)}
 handleKeys _ game
